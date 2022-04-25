@@ -1,7 +1,7 @@
 {
-  "name": "twitty_canvas_bot",
+  "name": "telegram_canvas_bot",
   "version": "1.0.0",
-  "description": "Twitter Bot for posting Screenshots",
+  "description": "Telegram Bot for posting Screenshots",
   "main": "index.js",
   "scripts": {
     "start": "node ./index.js",
@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MetzinAround/snes_soundtracks.git"
+    "url": "git+https://github.com/carlosb93/telegramCanvasBot.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/MetzinAround/snes_soundtracks/issues"
+    "url": "https://github.com/carlosb93/telegramCanvasBot/issues"
   },
-  "homepage": "https://github.com/MetzinAround/snes_soundtracks#readme",
+  "homepage": "https://github.com/carlosb93/telegramCanvasBot#readme",
   "dependencies": {
     "@napi-rs/canvas": "^0.1.21",
     "cwebp": "^2.0.5",
