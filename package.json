@@ -1,0 +1,31 @@
+{
+  "name": "twitty_canvas_bot",
+  "version": "1.0.0",
+  "description": "Twitter Bot for posting Screenshots",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./index.js",
+    "develop": "NODE_ENV=develop node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MetzinAround/snes_soundtracks.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MetzinAround/snes_soundtracks/issues"
+  },
+  "homepage": "https://github.com/MetzinAround/snes_soundtracks#readme",
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.21",
+    "cwebp": "^2.0.5",
+    "dotenv": "^8.2.0",
+    "fs": "^0.0.1-security",
+    "node": "^15.12.0",
+    "node-schedule": "^2.0.0",
+    "node-telegram-bot-api": "^0.57.0",
+    "twit": "^2.2.11"
+  }
+}
