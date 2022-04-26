@@ -66,15 +66,16 @@ const wrapText = async function(ctx, text, x, y, maxWidth, lineHeight) {
 // This functiona accepts 5 arguments:
 // canonicalName: this is the name we'll use to save our image
 // gradientColors: an array of two colors, i.e. [ '#ffffff', '#000000' ], used for our gradient
-// articleName: the title of the article or site you want to appear in the image
-// articleCategory: the category which that article sits in - or the subtext of the article
+// userName: the title of the article or site you want to appear in the image
+// userArroba: the category which that article sits in - or the subtext of the article
 // emoji: the emoji you want to appear in the image.
-const generateMainImage = async function(msg, articleName, articleCategory, emoji) {
+//msg, includes.users[0].username,includes.users[0].name,data.text, '😎'
+const generateMainImage = async function(msg, userArroba, userName, text, fecha,emoji) {
 
     
 
     const canonicalName = 'telegrampic'+msg.chat.id;
-    articleCategory = articleCategory;
+    userArroba = userArroba;
     // gradientColors is an array [ c1, c2 ]
     
     // const gradientColors = [ "#8005fc", "#073bae"]; // Backup values
@@ -96,7 +97,7 @@ const generateMainImage = async function(msg, articleName, articleCategory, emoj
 
    
     //Create a new Image object.
-    let path = './img/'+msg.from.username+'.jpg';
+    let path = './img/'+userArroba+'.jpg';
     var img = new Image(); // Create a new Image
     let data = fs.readFileSync(path);
     img.src = data;
@@ -129,6 +130,7 @@ const generateMainImage = async function(msg, articleName, articleCategory, emoj
     ctx.arc(130, 340, 65, 0, Math.PI * 2, false);
     ctx.stroke();
     ctx.clip();
+    ctx.imageSmoothingEnabled = false;
     // Draw the image at imageX, imageY.
     ctx.drawImage(img, 55, 275, 150, 150 );
     ctx.restore();
@@ -138,6 +140,7 @@ const generateMainImage = async function(msg, articleName, articleCategory, emoj
     var img = new Image(); // Create a new Image
     let logo = fs.readFileSync(uri);
     img.src = logo;
+    ctx.imageSmoothingEnabled = false;
     // Draw the image at imageX, imageY.
     ctx.drawImage(img, 795, 285, 124, 74 );
   
@@ -149,9 +152,9 @@ const generateMainImage = async function(msg, articleName, articleCategory, emoj
  
 
     // Add our title text
-    ctx.font = '95px InterBold';
+    ctx.font = '40px InterBold';
     ctx.fillStyle = 'white';
-    let wrappedText = await wrapText(ctx, articleName, 85, 790, 1200, 100);
+    let wrappedText = await wrapText(ctx, text, 85, 785, 910, 50);
     wrappedText[0].forEach(function(item) {
         // We will fill our text which is item[0] of our array, at coordinates [x, y]
         // x will be item[1] of our array
@@ -162,19 +165,19 @@ const generateMainImage = async function(msg, articleName, articleCategory, emoj
     // Add our category text to the canvas 
     ctx.font = '40px InterMedium';
     ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    ctx.fillText(articleCategory, 215, 450 - wrappedText[1] - 100); // 853 - 200 for emoji, -100 for line height of 1
+    ctx.fillText(userName, 215, 350 ); // 853 - 200 for emoji, -100 for line height of 1
     // Add our category text to the canvas 
     ctx.font = '20px InterMedium';
     ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    ctx.fillText('@'+msg.from.username, 215, 475 - wrappedText[1] - 100); // 853 - 200 for emoji, -100 for line height of 1
-    // Write our Emoji onto the canvas
-    ctx.fillStyle = 'white';
-    ctx.font = '95px AppleColorEmoji';
-    ctx.fillText(emoji, 795, 700);
-    // if(fs.existsSync(`${canonicalName}.png`)) {
-    //     return 'Images Exist! We did not create any'
-    // } 
-    // else {
+    ctx.fillText('@'+userArroba, 215,375); // 853 - 200 for emoji, -100 for line height of 1
+    
+    ctx.font = '20px InterMedium';
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillText('@serendipiaBot', 790, 735); // 853 - 200 for emoji, -100 for line height of 1
+    ctx.font = '20px InterMedium';
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillText(fecha, 75, 735); // 853 - 200 for emoji, -100 for line height of 1
+
         // Set canvas as to png
         try {
             const canvasData = await canvas.encode('png');
@@ -265,6 +268,7 @@ const generateMainImage = async function(msg, articleName, articleCategory, emoj
     for (i = 1; i <= passes; i++) {
       for (y = -10; y < 10; y++) {
         for (x = -10; x < 10; x++) {
+            context.imageSmoothingEnabled = false;
             context.drawImage(imageObj, x, y, 1000, 1000);
         }
       }
