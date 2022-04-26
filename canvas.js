@@ -5,7 +5,7 @@ import request from 'request';
 // Load in the fonts we need
 GlobalFonts.registerFromPath('./fonts/Inter-ExtraBold.ttf', 'InterBold');
 GlobalFonts.registerFromPath('./fonts/Inter-Medium.ttf','InterMedium');
-GlobalFonts.registerFromPath('./fonts/AppleColorEmoji.ttf', 'AppleColorEmoji');
+// GlobalFonts.registerFromPath('./fonts/AppleColorEmoji.ttf', 'AppleColorEmoji');
 
 
 
