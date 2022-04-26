@@ -1,7 +1,7 @@
-import canvas from '@napi-rs/canvas' // For canvas.
+import canvas, { GlobalFonts, createCanvas, Image} from '@napi-rs/canvas' // For canvas.
 import fs from 'fs' // For creating files for our images.
 import cwebp from 'cwebp' // For converting our images to webp.
-
+import request from 'request';
 // Load in the fonts we need
 GlobalFonts.registerFromPath('./fonts/Inter-ExtraBold.ttf', 'InterBold');
 GlobalFonts.registerFromPath('./fonts/Inter-Medium.ttf','InterMedium');
@@ -17,7 +17,7 @@ GlobalFonts.registerFromPath('./fonts/AppleColorEmoji.ttf', 'AppleColorEmoji');
 // - y: the starting y position of the text
 // - maxWidth: the maximum width, i.e., the width of the container
 // - lineHeight: the height of one line (as defined by us)
-const wrapText = function(ctx, text, x, y, maxWidth, lineHeight) {
+const wrapText = async function(ctx, text, x, y, maxWidth, lineHeight) {
     // First, split the words by spaces
     let words = text.split(' ');
     // Then we'll make a few variables to store info about our line
@@ -59,41 +59,99 @@ const wrapText = function(ctx, text, x, y, maxWidth, lineHeight) {
 }
 
 
+
+
+
+
 // This functiona accepts 5 arguments:
 // canonicalName: this is the name we'll use to save our image
 // gradientColors: an array of two colors, i.e. [ '#ffffff', '#000000' ], used for our gradient
 // articleName: the title of the article or site you want to appear in the image
 // articleCategory: the category which that article sits in - or the subtext of the article
 // emoji: the emoji you want to appear in the image.
-const generateMainImage = async function(canonicalName, gradientColors, articleName, articleCategory, emoji) {
+const generateMainImage = async function(msg, articleName, articleCategory, emoji) {
+
     
-    articleCategory = articleCategory.toUpperCase();
+
+    const canonicalName = 'telegrampic'+msg.chat.id;
+    articleCategory = articleCategory;
     // gradientColors is an array [ c1, c2 ]
-    if(typeof gradientColors === "undefined") {
-        gradientColors = [ "#8005fc", "#073bae"]; // Backup values
-    }
+    
+    // const gradientColors = [ "#8005fc", "#073bae"]; // Backup values
+    
 
     // Create canvas
-    const canvas = createCanvas(1342, 853);
+    // const canvas = createCanvas(1342, 853);
+
+    const canvas = createCanvas(1000, 1000);
     const ctx = canvas.getContext('2d')
 
-    // Add gradient - we use createLinearGradient to do this
-    let grd = ctx.createLinearGradient(0, 853, 1352, 0);
-    grd.addColorStop(0, gradientColors[0]);
-    grd.addColorStop(1, gradientColors[1]);
-    ctx.fillStyle = grd;
-    // Fill our gradient
-    ctx.fillRect(0, 0, 1342, 853);
+    // // Add gradient - we use createLinearGradient to do this
+    // let grd = ctx.createLinearGradient(0, 1000, 1000, 0);
+    // grd.addColorStop(0, gradientColors[0]);
+    // grd.addColorStop(1, gradientColors[1]);
+    // ctx.fillStyle = grd;
+    // // Fill our gradient
+    // ctx.fillRect(0, 0, 1000, 1000);
 
-    // Write our Emoji onto the canvas
+   
+    //Create a new Image object.
+    let path = './img/'+msg.from.username+'.jpg';
+    var img = new Image(); // Create a new Image
+    let data = fs.readFileSync(path);
+    img.src = data;
+    await blur(img, ctx, 4);
+    // ctx.save();
+    // var img = new Image();
+    // img.onload = function() {
+    //     ctx.drawImage(img, 0, 0);
+    // };
+    // img.src = photo_url;
+    // ctx.restore();
+    // ctx.drawImage(img, 0, 0, 1000, 1000 );
+
+    //blur image
+    // ctx.fillStyle = 'white';
+    // ctx.globalAlpha = 0.3;
+    // ctx.fillRect(0, 0, 1000, 1000);
+    // ctx.globalAlpha = 1;
+    //blur rounded box
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = 'black';
+    ctx.globalAlpha = 0.7;
+    
+    // ctx.fillRect(40, 250, 920, 500);
+    await roundRect(ctx, 40, 250, 920, 500, 20, true);
+    ctx.globalAlpha = 1;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(130, 340, 65, 0, Math.PI * 2, false);
+    ctx.stroke();
+    ctx.clip();
+    // Draw the image at imageX, imageY.
+    ctx.drawImage(img, 55, 275, 150, 150 );
+    ctx.restore();
+    
+    //Create a new Image object.
+    let uri = './img/twitter.png';
+    var img = new Image(); // Create a new Image
+    let logo = fs.readFileSync(uri);
+    img.src = logo;
+    // Draw the image at imageX, imageY.
+    ctx.drawImage(img, 795, 285, 124, 74 );
+  
     ctx.fillStyle = 'white';
-    ctx.font = '95px AppleColorEmoji';
-    ctx.fillText(emoji, 85, 700);
+    ctx.globalAlpha = 0.5;
+    
+    ctx.fillRect(60, 420, 870, 2);
+    ctx.globalAlpha = 1;
+ 
 
     // Add our title text
     ctx.font = '95px InterBold';
     ctx.fillStyle = 'white';
-    let wrappedText = wrapText(ctx, articleName, 85, 753, 1200, 100);
+    let wrappedText = await wrapText(ctx, articleName, 85, 790, 1200, 100);
     wrappedText[0].forEach(function(item) {
         // We will fill our text which is item[0] of our array, at coordinates [x, y]
         // x will be item[1] of our array
@@ -102,30 +160,37 @@ const generateMainImage = async function(canonicalName, gradientColors, articleN
     })
 
     // Add our category text to the canvas 
-    ctx.font = '50px InterMedium';
+    ctx.font = '40px InterMedium';
     ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    ctx.fillText(articleCategory, 85, 553 - wrappedText[1] - 100); // 853 - 200 for emoji, -100 for line height of 1
-
-    if(fs.existsSync(`./views/images/intro-images/${canonicalName}.png`)) {
-        return 'Images Exist! We did not create any'
-    } 
-    else {
+    ctx.fillText(articleCategory, 215, 450 - wrappedText[1] - 100); // 853 - 200 for emoji, -100 for line height of 1
+    // Add our category text to the canvas 
+    ctx.font = '20px InterMedium';
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillText('@'+msg.from.username, 215, 475 - wrappedText[1] - 100); // 853 - 200 for emoji, -100 for line height of 1
+    // Write our Emoji onto the canvas
+    ctx.fillStyle = 'white';
+    ctx.font = '95px AppleColorEmoji';
+    ctx.fillText(emoji, 795, 700);
+    // if(fs.existsSync(`${canonicalName}.png`)) {
+    //     return 'Images Exist! We did not create any'
+    // } 
+    // else {
         // Set canvas as to png
         try {
             const canvasData = await canvas.encode('png');
             // Save file
-            fs.writeFileSync(`./views/images/intro-images/${canonicalName}.png`, canvasData);
+            fs.writeFileSync(`${canonicalName}.png`, canvasData);
             
-           return `./views/images/intro-images/${canonicalName}.png`;
+            return true;
         }
         catch(e) {
             console.log(e);
             return 'Could not create png image this time.'
         }
         try {
-            const encoder = new cwebp.CWebp(path.join(__dirname, '../', `/views/images/intro-images/${canonicalName}.png`));
+            const encoder = new cwebp.CWebp(path.join(__dirname, '../', `${canonicalName}.png`));
             encoder.quality(30);
-            await encoder.write(`./views/images/intro-images/${canonicalName}.webp`, function(err) {
+            await encoder.write(`${canonicalName}.webp`, function(err) {
                 if(err) console.log(err);
             });
         }
@@ -135,7 +200,75 @@ const generateMainImage = async function(canonicalName, gradientColors, articleN
         }
     
         return 'Images have been successfully created!';
-    }
+    
 }
+/**
+ * Draws a rounded rectangle using the current state of the canvas.
+ * If you omit the last three params, it will draw a rectangle
+ * outline with a 5 pixel border radius
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {Number} x The top left x coordinate
+ * @param {Number} y The top left y coordinate
+ * @param {Number} width The width of the rectangle
+ * @param {Number} height The height of the rectangle
+ * @param {Number} [radius = 5] The corner radius; It can also be an object 
+ *                 to specify different radii for corners
+ * @param {Number} [radius.tl = 0] Top left
+ * @param {Number} [radius.tr = 0] Top right
+ * @param {Number} [radius.br = 0] Bottom right
+ * @param {Number} [radius.bl = 0] Bottom left
+ * @param {Boolean} [fill = false] Whether to fill the rectangle.
+ * @param {Boolean} [stroke = true] Whether to stroke the rectangle.
+ */
+ const roundRect = async function(ctx, x, y, width, height, radius, fill, stroke) {
 
+    if (typeof stroke === 'undefined') {
+      stroke = true;
+    }
+    if (typeof radius === 'undefined') {
+      radius = 5;
+    }
+    if (typeof radius === 'number') {
+      radius = {tl: radius, tr: radius, br: radius, bl: radius};
+    } else {
+      var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
+      for (var side in defaultRadius) {
+        radius[side] = radius[side] || defaultRadius[side];
+      }
+    }
+    ctx.beginPath();
+    ctx.moveTo(x + radius.tl, y);
+    ctx.lineTo(x + width - radius.tr, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+    ctx.lineTo(x + width, y + height - radius.br);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+    ctx.lineTo(x + radius.bl, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+    ctx.lineTo(x, y + radius.tl);
+    ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+    ctx.closePath();
+    if (fill) {
+      ctx.fill();
+    }
+    if (stroke) {
+      ctx.stroke();
+    }
+  
+  }
+
+
+  const blur = async function(imageObj, context, passes) {
+    var i, x, y;
+    passes = passes || 4;
+    context.globalAlpha = 0.08;
+    // Loop for each blur pass.
+    for (i = 1; i <= passes; i++) {
+      for (y = -10; y < 10; y++) {
+        for (x = -10; x < 10; x++) {
+            context.drawImage(imageObj, x, y, 1000, 1000);
+        }
+      }
+    }
+    context.globalAlpha = 1.0;
+  }
 export { generateMainImage }

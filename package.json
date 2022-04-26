@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Telegram Bot for posting Screenshots",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node ./index.js",
     "develop": "NODE_ENV=develop node index.js"
@@ -26,6 +27,7 @@
     "node": "^15.12.0",
     "node-schedule": "^2.0.0",
     "node-telegram-bot-api": "^0.57.0",
+    "request": "^2.88.2",
     "twit": "^2.2.11"
   }
 }
